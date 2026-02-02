@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CharController;
 
-Route::get('/ping', function () {
-    return response()->json(['message' => 'teste']);
-});
+Route::get('/personagens', [CharController::class, 'show']);
