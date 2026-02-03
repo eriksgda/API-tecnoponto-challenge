@@ -10,6 +10,9 @@ class SearchLog extends Model
 
     protected $fillable = [
         'search_text',
-        'ip_address'
+        'ip_address',
+        'searched_at'
     ];
+
+    public $timestamps = false; 
 }
