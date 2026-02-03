@@ -20,11 +20,13 @@ class CharController
         $charName = $request->query('name');
         $page = (int) $request->query('page', 1);
 
+        $ip = $request->ip();
+
         if (!$charName) {
             return response()->json(['error' => 'Parâmetro name é obrigatório'], 400);
         }
 
-        $response = $this->service->getCharByName($charName, $page);
+        $response = $this->service->getCharByName($charName, $page, $ip);
 
         return response()->json($response, 200);
     }
