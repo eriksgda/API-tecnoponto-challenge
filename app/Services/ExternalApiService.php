@@ -7,23 +7,28 @@ use Exception;
 use App\DTOs\CharResponseDTO;
 use App\DTOs\EpisodeDTO;
 use App\Enums\CharStatus;
+use App\Services\LogService;
 
 class ExternalApiService
 {
     private readonly string $baseUrl;
+    private LogService $logService;
 
-    public function __construct()
+    public function __construct(LogService $logService)
     {
         $this->baseUrl = config('services.external_api.base_url');
+        $this->logService = $logService;
     }
 
-    public function getCharByName(string $name, int $page): array
+    public function getCharByName(string $name, int $page, string $ip): array
     {
         $response = Http::get("{$this->baseUrl}/character/?name={$name}&page={$page}");
 
         if ($response->failed()) {
             throw new Exception('Erro');
         }
+
+        $this->logService->store($name, $ip);
         
         return [
             'pagination' => $this->paginate($response->json('info'), $page),
