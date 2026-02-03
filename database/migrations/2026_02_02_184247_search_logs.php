@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('search_text');
             $table->string('ip_address', 45);
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('searched_at')->useCurrent();
         });
     }
 
