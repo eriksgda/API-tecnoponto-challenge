@@ -8,7 +8,7 @@ use App\DTOs\CharResponseDTO;
 
 class CharController
 {
-    private ExternalApiService $serivce;
+    private ExternalApiService $service;
 
     public function __construct(ExternalApiService $service)
     {
@@ -17,18 +17,29 @@ class CharController
 
     public function show(Request $request)
     {
-        $charName = $request->query('name');
-        $page = (int) $request->query('page', 1);
+        try {
+            $charName = $request->query('name');
+            $page = (int) $request->query('page', 1);
+            
+            $ip = $request->ip();
+            
+            $response = $this->service->getCharByName($charName, $page, $ip);
+            
+            return response()->json($response, 200);
 
-        $ip = $request->ip();
-
-        if (!$charName) {
-            return response()->json(['error' => 'Parâmetro name é obrigatório'], 400);
+        } catch (\DomainException $exception){
+            return response()->json([
+                'message' => $exception->getMessage()
+            ], 404);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => 'Api externa indisponível, aguarde alguns instantes antes de buscar novamente',
+                'teste' => $e
+                ], 503);
+        } catch (\Throwable $exception){
+            return response()->json([
+                'message' => 'Erro interno'
+            ], 500);
         }
-
-        $response = $this->service->getCharByName($charName, $page, $ip);
-
-        return response()->json($response, 200);
     }
-
 }

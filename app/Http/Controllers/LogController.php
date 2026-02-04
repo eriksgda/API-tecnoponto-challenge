@@ -16,7 +16,16 @@ class LogController
 
     public function index() 
     {
-        return response()->json($this->service->getAllLogs());
+        try {
+            return response()->json(
+                $this->service->getAllLogs(), 200);
+
+        } catch (\Throwable $exception) {
+            return response()->json([
+                'message' => 'Erro ao buscar logs'
+            ], 500);
+        }
+        
     }
 
 }
