@@ -11,7 +11,7 @@ class EpisodeDTO
         public string $episode,
     ){}
 
-        public static function fromApi(array $data): self
+    public static function fromArray(array $data): self
     {
         return new self(
             name: $data['name'],
