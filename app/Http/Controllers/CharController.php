@@ -34,7 +34,6 @@ class CharController
         } catch (\RuntimeException $e) {
             return response()->json([
                 'message' => 'Api externa indisponível, aguarde alguns instantes antes de buscar novamente',
-                'teste' => $e
                 ], 503);
         } catch (\Throwable $exception){
             return response()->json([
