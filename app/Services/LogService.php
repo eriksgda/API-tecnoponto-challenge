@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\SearchLog;
+use App\DTOs\LogDTO;
 
 class LogService
 {
@@ -11,7 +12,10 @@ class LogService
 
     public function getAllLogs() 
     {
-        return Searchlog::latest('searched_at')->get();
+        return Searchlog::latest('searched_at')
+        ->get()
+        ->map(fn($log) => LogDTO::fromModel($log->toArray()))
+        ->toArray();
     }
 
     public function store(string $name, string $ip): void
