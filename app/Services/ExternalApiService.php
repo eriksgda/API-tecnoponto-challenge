@@ -8,42 +8,41 @@ use App\DTOs\CharResponseDTO;
 use App\DTOs\EpisodeDTO;
 use App\Enums\CharStatus;
 use App\Services\LogService;
+use App\Services\PaginationService;
 
 class ExternalApiService
 {
     private readonly string $baseUrl;
     private LogService $logService;
+    private PaginationService $paginationService;
 
-    public function __construct(LogService $logService)
+    public function __construct(
+        LogService $logService, 
+        PaginationService $paginationService
+        )
     {
         $this->baseUrl = config('services.external_api.base_url');
         $this->logService = $logService;
+        $this->paginationService = $paginationService;
     }
 
     public function getCharByName(string $name, int $page, string $ip): array
     {
         $response = Http::get("{$this->baseUrl}/character/?name={$name}&page={$page}");
 
+        if ($response->status() === 404) {
+            throw new \DomainException('Personagem não encontrado');
+        }
+
         if ($response->failed()) {
-            throw new Exception('Erro');
+            throw new \RuntimeException('Erro ao acessar API');
         }
 
         $this->logService->store($name, $ip);
         
         return [
-            'pagination' => $this->paginate($response->json('info'), $page),
+            'pagination' => $this->paginationService->paginate($response->json('info'), $page),
             'data' => $this->mapToDTO($response->json('results'))
-        ];
-    }
-
-    private function paginate(array $info, int $currentPage): array
-    {
-        return [
-            'total' => $info['count'] ?? null,
-            'pages' => $info['pages'] ?? null,
-            "current" => $currentPage,
-            'next' => $currentPage < $info['pages'] ? $currentPage + 1 : null,
-            'prev' => $currentPage > 1 ? $currentPage - 1 : null
         ];
     }
 
@@ -65,6 +64,8 @@ class ExternalApiService
         $episodes = [];
 
         if (!empty($episodeIds)) {
+            usleep(280_000);
+
             $response = Http::get("{$this->baseUrl}/episode/".implode(',', $episodeIds));
             $episodeData = $response->json();
 
@@ -72,7 +73,7 @@ class ExternalApiService
                 $episodeData = [$episodeData];
             }
 
-            $episodes = array_map(fn($ep) => EpisodeDTO::fromApi($ep), $episodeData);
+            $episodes = array_map(fn($ep) => EpisodeDTO::fromArray($ep), $episodeData);
         }        
 
         return $episodes;
